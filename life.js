@@ -4,12 +4,12 @@ var plan =
 "#     #            #",
 "###       #        #",
 "#                  #",
-"#    #             #",
+"#    #    o        #",
 "#    #             #",
 "######         #####",
 "#              #####",
-"####################"]
-
+"####################"];
+ 
 var directions = {
 	"n": new Vector(0, 1),
 	"ne": new Vector(1, 1),
@@ -22,7 +22,7 @@ var directions = {
 }
 //Takes in a legend and a single character and returns the constructor associated with it
 function elementFromChar(legend, ch) {
-	if(ch = " ") return null;
+	if(ch == " ") return null;
 	var element = new legend[ch]();
 	element.originChar = ch;
 	return element;
@@ -39,7 +39,7 @@ function World(map, legend){
 	this.grid = grid;
 	this.legend = legend;
 
-	//
+	//Populate grid with elements from map
 	map.forEach(function (line, y) {
 		for(let x = 0; x < line.length; x++){
 			grid.set(new Vector(x,y), elementFromChar(legend, line[x]));
@@ -102,12 +102,12 @@ function BouncingCritter() {
 		if (view.look(this.direction) != " ") {
 			this.direction = view.find(" ") || "s";
 		}
-		return {type: "move", direction: this.direction}
+		return {type: "move", direction: this.direction};
 	}
 }
 
 function Wall(){}
-let world = new World(plan, {"#":Wall, "o": BouncingCritter});
+let world = new World(plan, {"#": Wall, "o": BouncingCritter});
 console.log(world.toString());
 
 
