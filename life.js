@@ -9,7 +9,7 @@ var plan =
 "######         #####",
 "#              #####",
 "####################"];
- 
+
 var directions = {
 	"n": new Vector(0, 1),
 	"ne": new Vector(1, 1),
@@ -20,6 +20,7 @@ var directions = {
 	"w": new Vector(-1, 0),
 	"nw": new Vector(-1, 1)
 }
+
 //Takes in a legend and a single character and returns the constructor associated with it
 function elementFromChar(legend, ch) {
 	if(ch == " ") return null;
@@ -57,8 +58,35 @@ function World(map, legend){
 		}
 		return output;
 	};
-}
+	//Carries out one "Turn" in the timeline of the program
+	this.turn = function () {
+		let acted = [];
+		this.grid.forEach(function(creature, vector){
+			if(creature.act && acted.indexOf(creature) == -1){
+				acted.push(creature);
+				this.letAct(creature, vector);
+			}
+		}, this);
+	};
 
+	this.letAct = function (creature, vector){
+		let action = creature.act(new View(this, vector));
+		if (action.type == "move") {
+			var dest = this.checkDestination(action, vector);
+			if(dest && this.grid.get(dest) == null) {
+				this.grid.set(vector, null);
+				this.grid.set(dest, critter);
+			}
+		}
+	};
+
+	this.checkDestination = function(action, vector) {
+		if(directions.hasOwnProperty(action.direction)) {
+			var dest = vector.plus(directions[action.direction]);
+			if(this.grid.isInside(dest)) return dest;
+		}
+	}
+}
 function Grid(width, height){
 	//Declare an array and fill it with false values
 	this.space = new Array(width * height);
@@ -80,7 +108,17 @@ function Grid(width, height){
 	this.set = function (vector, value){
 		this.space[vector.x + vector.y * this.width] = value;
 	}
+	//Takes a function and a context (for using THIS in the passed function)
+	this.forEach = function(f, context) {
+		for (let y = 0; y < this.height; y++){
+			for(let x = 0; x < this.width; x++) {
+				var value = this.space[x + y * this.width];
+				if(value != null) f.call(context, value, new Vector(x, y));
+			}
+		};
+	}
 }
+
 function Vector(x,y){
 	this.x = x;
 	this.y = y;
@@ -91,12 +129,36 @@ function Vector(x,y){
 		return new Vector(this.x + other.x, this.y + other.y);
 	}
 }
+function View(world, vector) {
+	this.world = world;
+	this.vector = vector;
+	this.look = function (dir) {
+		var target = this.vector.plus(directions[dir]);
+		if(this.world.grid.isInside(target)) 
+			return charFromElement(this.world.grid.get(target));
+		else
+			return "#"; 
+	};
+	this.findAll = function (ch) {
+		var found = [];
+		for(var dir in directions)
+			if (this.look(dir) == ch)
+				found.push(dir);
+		return found;
+	};
+	this.find = function (ch) {
+		var found = this.findAll(ch);
+		if (found.length === 0) return null;
+		return randomElement(found);
+	}
+}
+
 function randomElement(array){
 	return array[Math.floor(Math.random() * array.length)];
 }
 
 var directionNames = "n ne e se s sw w nw".split(" ");
-function BouncingCritter() {
+function BouncingCreature() {
 	this.direction = randomElement(directionNames)
 	this.act = function(view) {
 		if (view.look(this.direction) != " ") {
@@ -107,9 +169,8 @@ function BouncingCritter() {
 }
 
 function Wall(){}
-let world = new World(plan, {"#": Wall, "o": BouncingCritter});
+let world = new World(plan, {"#": Wall, "o": BouncingCreature});
 console.log(world.toString());
-
 
 
 // this.updateHTML = function() {
