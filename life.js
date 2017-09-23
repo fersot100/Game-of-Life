@@ -75,7 +75,7 @@ function World(map, legend){
 			var dest = this.checkDestination(action, vector);
 			if(dest && this.grid.get(dest) == null) {
 				this.grid.set(vector, null);
-				this.grid.set(dest, critter);
+				this.grid.set(dest, creature);
 			}
 		}
 	};
@@ -170,7 +170,13 @@ function BouncingCreature() {
 
 function Wall(){}
 let world = new World(plan, {"#": Wall, "o": BouncingCreature});
-console.log(world.toString());
+
+for(let i = 0; i < 5; i++){
+	world.turn();
+	console.log(world.toString());
+
+}
+
 
 
 // this.updateHTML = function() {
