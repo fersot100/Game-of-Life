@@ -14,7 +14,6 @@ function Grid(width, height){
 		return arr;
 	}());
 
-
 	this.play = function(){
 		if (playing){
 			this.turn();
@@ -29,6 +28,16 @@ function Grid(width, height){
 		});
 	}
 
+	this.randomize = function(){
+		for(let i = 0; i < this.map.length; i++){
+			if (Math.random() > 0.8){
+				activate(this.map, this.htmlNodes[i]); 
+			}else{
+				deactivate(this.map, this.htmlNodes[i]);
+			}
+		}
+	}
+
 	this.turn = function(){
 		for(let i = 0; i < this.map.length; i++){
 			var pos = this.itov(i);
@@ -40,7 +49,6 @@ function Grid(width, height){
 					neighbors++;
 				}
 			}
-
 			if(this.map[i] == '#'){
 				if(neighbors < 2 || neighbors > 3){
 					deactivate(this.map, this.htmlNodes[i]);
@@ -127,7 +135,7 @@ function deactivate(grid, element) {
 	element.classList.remove('active');
 }
 
-var g = new Grid(55,40);
+var g = new Grid(25,25);
 
 document.querySelectorAll('#controls input[type="number"]').forEach(el => {
 	el.addEventListener('change', function(e){
@@ -141,7 +149,6 @@ document.querySelectorAll('#controls input[type="number"]').forEach(el => {
 });
 
 document.querySelector('#play').addEventListener('click',e => {
-
 	if(!playing){
 		playing = true;
 		g.play();
@@ -150,9 +157,12 @@ document.querySelector('#play').addEventListener('click',e => {
 		e.target.innerText = 'Play'
 		playing = false;
 	}
-
 });
 
-document.querySelector('#clear').addEventListener('click', e=> {
+document.querySelector('#clear').addEventListener('click', e => {
 	g.clear();
+});
+
+document.querySelector('#randomize').addEventListener('click', e => {
+	g.randomize();
 });
