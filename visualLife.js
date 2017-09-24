@@ -1,58 +1,67 @@
 const gridArea = document.querySelector('#gridArea');
 let playing = false;
+
 function Grid(width, height){
 
-	this.map = new Array(width * height).fill('');
 	this.width = width;
 	this.height = height;
+
+	this.map = (function (){
+		var arr = [];
+		for (let i = 0; i < (width * height); i++) {
+			arr.push('');
+		}
+		return arr;
+	}());
+
 
 	this.play = function(){
 		if (playing){
 			this.turn();
 			setTimeout(this.play.bind(this), 500);
 		}
-		
 	}
 
 	this.clear = function() {
-		this.map.fill();
-		console.log(this.htmlNodes.length)
+		this.map.fill('');
 		this.htmlNodes.forEach(e => {
 			deactivate(this.map, e);
 		});
 	}
 
 	this.turn = function(){
-		console.log('Turn');
-		this.map.forEach((e,i) => {
-			let pos = this.itov(i);
-			let neighbors = 0;
+		for(let i = 0; i < this.map.length; i++){
+			var pos = this.itov(i);
+			var neighbors = 0;
+
 			for (let dir in directions){
-				let check = pos.plus(dir);
-				if(this.map[this.vtoi(check)] == '#')
+				let check = pos.plus(directions[dir]);
+				if(this.getValue(check) == '#'){
 					neighbors++;
+				}
 			}
-			
-			if(e == '#'){
+
+			if(this.map[i] == '#'){
 				if(neighbors < 2 || neighbors > 3){
 					deactivate(this.map, this.htmlNodes[i]);
-					console.log('Deactivate', i);
 				}	
 			}else {
 				if(neighbors == 3){
 					activate(this.map, this.htmlNodes[i]);
-					console.log('Activate', i)
 				}	
 			}
-		});
+		}
 	}
 
 	this.itov = function (i) {
-		return new Vector(i % this.width, Math.floor(i / this.width));
+		return new Vector(i % this.width,
+			Math.floor(i / this.width));
 	}
+
 	this.vtoi = function (vector){
 		return vector.x + vector.y * this.width;
 	}
+
 	this.getValue = function (vector){
 		return this.map[vector.x + vector.y * this.width];
 	}
@@ -80,8 +89,6 @@ function Grid(width, height){
 			activate(this.map, e.target);
 		}
 	}.bind(this));
-
-
 }
 
 function Vector(x, y) {
@@ -100,30 +107,41 @@ function Vector(x, y) {
 }
 
 var directions = {
-	'n': new Vector(0,1),
-	'ne': new Vector(1,1),
-	'e': new Vector(1,0),
-	'se': new Vector(1,-1),
-	's': new Vector(0,-1),
-	'sw': new Vector(-1,-1),
-	'w': new Vector(-1,0),
-	'nw': new Vector(-1,1)
+	n: new Vector(0,1),
+	ne: new Vector(1,1),
+	e: new Vector(1,0),
+	se: new Vector(1,-1),
+	s: new Vector(0,-1),
+	sw: new Vector(-1,-1),
+	w: new Vector(-1,0),
+	nw: new Vector(-1,1)
 }
 
 function activate(grid, element){
-	grid[parseInt(element.dataset.index, 10)] = '';
+	grid[parseInt(element.dataset.index, 10)] = '#';
 	element.classList.add('active');
 }
 
 function deactivate(grid, element) {
-	grid[parseInt(element.dataset.index, 10)] = '#';
+	grid[parseInt(element.dataset.index, 10)] = '';
 	element.classList.remove('active');
 }
 
-var g = new Grid(25,25);
+var g = new Grid(55,40);
+
+document.querySelectorAll('#controls input[type="number"]').forEach(el => {
+	el.addEventListener('change', function(e){
+		console.log(e.target.name);
+		if(e.target.name == 'x'){
+			g = new Grid(e.target.value, g.height);
+		}else if(e.target.name == 'y'){
+			g = new Grid(g.width, e.target.value);
+		}
+	});
+});
 
 document.querySelector('#play').addEventListener('click',e => {
-	
+
 	if(!playing){
 		playing = true;
 		g.play();
@@ -134,6 +152,7 @@ document.querySelector('#play').addEventListener('click',e => {
 	}
 
 });
+
 document.querySelector('#clear').addEventListener('click', e=> {
 	g.clear();
-})
+});
